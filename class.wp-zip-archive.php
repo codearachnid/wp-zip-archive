@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * WordPress Zip Archive Class
+ * 
+ * @hattip inspiration from https://github.com/bradvin/wp-zip-generator
+ */
+
 if ( !class_exists( 'WP_Zip_Archive' ) ) {
   class WP_Zip_Archive{
     $errors = array();
@@ -21,8 +27,9 @@ if ( !class_exists( 'WP_Zip_Archive' ) ) {
       return empty( $this->errors );
     }
     function required_lib_exists(){
-      if( !class_exists() ){
-        return new WP_Error('broke', __("I've fallen and can't get up"));
+    	// require the ZipArchive class and that PHP version be above 5.2.0
+      if( !class_exists('ZipArchive') && version_compare( PHP_VERSION, '5.2.0', '<' ) ){
+        return new WP_Error('broke', __( 'WP_Zip_Archive requires that the PHP version be above 5.2.0 and ZipArchive is available', 'wp-zip-archive' ) );
       } else {
         return true;
       }
