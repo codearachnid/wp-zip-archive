@@ -40,11 +40,13 @@ if ( !class_exists( 'WP_Zip_Archive' ) ) {
             if( empty( $this->settings['archive_name'] ) ) {
                 $this->errors->add('fatal', __( 'WP_Zip_Archive requires an archive filename to be set.', 'wp-zip-archive' ) );
             } else {
+
                 $this->settings['archive_name'] = sanitize_title_with_dashes( $this->settings['archive_name'] );
 
                 // add .zip extension if it doesn't exist
                 if( ! $this->file_has_ext( $this->settings['archive_name'], 'zip') )
                     $this->settings['archive_name'] .= '.zip';
+
             }
 
             if( empty( $this->settings['save_dir'] ) ){
@@ -62,14 +64,30 @@ if ( !class_exists( 'WP_Zip_Archive' ) ) {
             return $this->has_errors();
         }
 
+        function get_files_or_folders(){
+            return (array) $this->settings['file_list'];
+        }
+
         function create(){
             if( ! $this->has_errors() ){
                 $zip = new ZipArchive;
-                // print_r($this->get_errors()->errors);
-                echo  $this->settings['save_file'];
                 $zip->open( $this->settings['save_file'], ZipArchive::CREATE && ZipArchive::OVERWRITE );
+                foreach( $this->get_files_or_folders() as $include_file ){
+                    $zip_filename = basename( $include_file );
+                    if ( in_array( $zip_filename, $this->settings['exclude'] ) )
+                        continue;
+
+                    if( file_exists( $include_file ) ){
+                        $zip->addFile( $include_file, $zip_filename );
+                    } else {
+                        echo $include_file . ' does not exist';
+                    }
+
+                    $zip_filename = basename( $include_file );
+                }
                 $zip->close();
             } else {
+                print_r($this->get_errors());
                 $this->errors->add('fatal', __( 'WP_Zip_Archive cannot continue because settings do not validate.', 'wp-zip-archive' ) );
             }
         }
@@ -87,13 +105,16 @@ if ( !class_exists( 'WP_Zip_Archive' ) ) {
          * @param bool $delete
          */
         function download( $delete = true ) {
+
+            $zip_filename = basename( $this->settings['save_file'] );
+            
             header( 'Content-type: application/zip' );
-            header( sprintf( 'Content-Disposition: attachment; filename="%s"', $this->settings['download_filename'] ) );
-            readfile( $this->settings['zip_temp_filename'] );
+            header( sprintf( 'Content-Disposition: attachment; filename="%s"', $zip_filename ) );
+            readfile( $zip_filename );
 
             // remove file if true
             if ( $delete )
-                unlink( $this->settings['zip_temp_filename'] );
+                unlink( $this->settings['save_file'] );
         }
 
         /**
