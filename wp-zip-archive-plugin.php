@@ -32,7 +32,7 @@ if ( !defined( 'ABSPATH' ) )
 add_action( 'admin_init', 'wp_zip_archive_plugin' );
 function wp_zip_archive_plugin(){
 	if( !class_exists('WP_Zip_Archive'))
-		include_once 'inc/class.wp-zip-archive.php';
+		include_once 'class.wp-zip-archive.php';
 	 
 	// setup your archive arguments
 	$args = array(
@@ -48,5 +48,5 @@ function wp_zip_archive_plugin(){
 	$zip->create();
 
 	// download
-	$zip->download();
+	// $zip->download();
 }
